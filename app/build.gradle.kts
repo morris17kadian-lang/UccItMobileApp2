@@ -17,6 +17,17 @@ kotlin {
         }
     }
 
+    listOf(
+        iosX64(),
+        iosArm64(),
+        iosSimulatorArm64(),
+    ).forEach { iosTarget ->
+        iosTarget.binaries.framework {
+            baseName = "ComposeApp"
+            isStatic = true
+        }
+    }
+
     @OptIn(ExperimentalWasmDsl::class)
     wasmJs {
         moduleName = "composeApp"
@@ -29,6 +40,8 @@ kotlin {
     }
 
     sourceSets {
+        val iosMain by getting
+
         commonMain.dependencies {
             implementation(compose.runtime)
             implementation(compose.foundation)
@@ -48,6 +61,9 @@ kotlin {
                 implementation("androidx.room:room-runtime:2.6.1")
                 implementation("androidx.room:room-ktx:2.6.1")
             }
+        }
+        iosMain.dependencies {
+            implementation(compose.ui)
         }
     }
 }

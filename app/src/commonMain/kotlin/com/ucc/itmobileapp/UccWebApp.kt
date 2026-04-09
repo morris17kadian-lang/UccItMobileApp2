@@ -85,7 +85,7 @@ private val webDirectory = listOf(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun UccWebApp() {
+fun UccSharedApp() {
     UCCITMobileAppTheme {
         val uriHandler = LocalUriHandler.current
         val courses = remember { DefaultCourses.all() }
@@ -102,7 +102,7 @@ fun UccWebApp() {
                                 fontWeight = FontWeight.Bold,
                             )
                             Text(
-                                text = "Multiplatform preview for web",
+                                text = "Multiplatform app for web and iOS",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = UCCYellow,
                             )
