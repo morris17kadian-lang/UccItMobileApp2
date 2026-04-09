@@ -585,13 +585,20 @@ private fun CoursesContent(padding: PaddingValues) {
                 .fillMaxSize()
                 .padding(padding)
         ) {
-            Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
+            Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp)) {
                 Text(
-                    text = "IT Course Selection",
-                    style = MaterialTheme.typography.headlineMedium,
-                    fontWeight = FontWeight.ExtraBold,
-                    color = Color(0xFF131313)
+                    text = "IT Courses",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary
                 )
+
+                Text(
+                    text = "Select a course to view more details.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Color.Gray
+                )
+
                 Spacer(modifier = Modifier.height(12.dp))
                 OutlinedTextField(
                     value = searchQuery,
@@ -626,7 +633,12 @@ private fun CoursesContent(padding: PaddingValues) {
                 Text("Lecturer", modifier = Modifier.weight(0.22f), fontWeight = FontWeight.Bold, style = MaterialTheme.typography.labelLarge)
             }
             Divider(color = Color(0xFFDDDDDD))
-            LazyColumn(modifier = Modifier.fillMaxWidth().weight(1f)) {
+            LazyColumn(modifier = Modifier
+                .fillMaxSize()
+                .padding(padding),
+                verticalArrangement = Arrangement.spacedBy(0.dp),
+                contentPadding = PaddingValues(bottom = 88.dp)
+            ) {
                 items(filteredCourses) { course ->
                     Card(
                         onClick = { selectedCourse = course },
