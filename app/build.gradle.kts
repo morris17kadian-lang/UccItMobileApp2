@@ -1,7 +1,55 @@
+import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
+
 plugins {
+    id("org.jetbrains.kotlin.multiplatform")
     id("com.android.application")
-    id("org.jetbrains.kotlin.android")
-    id("org.jetbrains.kotlin.kapt")
+    id("org.jetbrains.compose")
+    id("org.jetbrains.kotlin.plugin.compose")
+    id("com.google.devtools.ksp")
+}
+
+kotlin {
+    androidTarget {
+        compilations.all {
+            kotlinOptions {
+                jvmTarget = "17"
+            }
+        }
+    }
+
+    @OptIn(ExperimentalWasmDsl::class)
+    wasmJs {
+        moduleName = "composeApp"
+        browser {
+            commonWebpackConfig {
+                outputFileName = "composeApp.js"
+            }
+        }
+        binaries.executable()
+    }
+
+    sourceSets {
+        commonMain.dependencies {
+            implementation(compose.runtime)
+            implementation(compose.foundation)
+            implementation(compose.material3)
+            implementation(compose.ui)
+            implementation(compose.components.resources)
+            implementation(compose.components.uiToolingPreview)
+        }
+        androidMain {
+            dependencies {
+                implementation(compose.preview)
+                implementation("androidx.core:core-ktx:1.13.1")
+                implementation("androidx.activity:activity-compose:1.9.0")
+                implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.3")
+                implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.2")
+                implementation("androidx.compose.material:material-icons-extended")
+                implementation("androidx.room:room-runtime:2.6.1")
+                implementation("androidx.room:room-ktx:2.6.1")
+            }
+        }
+    }
 }
 
 android {
@@ -35,15 +83,15 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
-    kotlinOptions {
-        jvmTarget = "17"
-    }
 
     buildFeatures {
         compose = true
     }
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.14"
+
+    // Point AGP at src/androidMain (KMP convention)
+    sourceSets["main"].apply {
+        manifest.srcFile("src/androidMain/AndroidManifest.xml")
+        res.srcDirs("src/androidMain/res")
     }
 
     packaging {
@@ -53,34 +101,19 @@ android {
     }
 }
 
+// KSP configuration for Room (Android target only)
+ksp {
+    arg("room.schemaLocation", "$projectDir/schemas")
+    arg("room.incremental", "true")
+}
+
 dependencies {
-    implementation("androidx.compose.ui:ui:1.10.6")
-    val composeBom = platform("androidx.compose:compose-bom:2024.06.00")
-    implementation(composeBom)
-    androidTestImplementation(composeBom)
+    // Room annotation processor via KSP (Android target only)
+    add("kspAndroid", "androidx.room:room-compiler:2.6.1")
 
-    implementation("androidx.core:core-ktx:1.13.1")
-    implementation("androidx.activity:activity-compose:1.9.0")
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.3")
+    debugImplementation(compose.uiTooling)
 
-    implementation("androidx.compose.ui:ui")
-    implementation("androidx.compose.ui:ui-tooling-preview")
-    implementation("androidx.compose.material3:material3")
-    implementation("androidx.compose.material:material-icons-extended")
-
-    // Room (local database for Courses)
-    implementation("androidx.room:room-runtime:2.6.1")
-    implementation("androidx.room:room-ktx:2.6.1")
-    kapt("androidx.room:room-compiler:2.6.1")
-
-    debugImplementation("androidx.compose.ui:ui-tooling")
-    debugImplementation("androidx.compose.ui:ui-test-manifest")
-
-    testImplementation("junit:junit:4.13.2")
-    androidTestImplementation("androidx.test.ext:junit:1.2.1")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
-    androidTestImplementation("androidx.compose.ui:ui-test-junit4")
-
-    // For viewModel() support in Compose
-    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.2")
+    add("testImplementation", "junit:junit:4.13.2")
+    add("androidTestImplementation", "androidx.test.ext:junit:1.2.1")
+    add("androidTestImplementation", "androidx.test.espresso:espresso-core:3.6.1")
 }

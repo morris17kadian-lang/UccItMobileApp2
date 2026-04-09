@@ -37,7 +37,9 @@ abstract class AppDatabase : RoomDatabase() {
         private fun ensurePrepopulated(database: AppDatabase) {
             CoroutineScope(Dispatchers.IO).launch {
                 if (database.courseDao().count() == 0) {
-                    database.courseDao().insertAll(DefaultCourses.all())
+                    database.courseDao().insertAll(
+                        DefaultCourses.all().map(CourseEntity::fromCourse)
+                    )
                 }
             }
         }
