@@ -10,9 +10,9 @@ import androidx.compose.ui.graphics.Brush
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -25,13 +25,21 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Call
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.List
@@ -62,7 +70,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -78,6 +85,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ucc.itmobileapp.data.AppDatabase
 import com.ucc.itmobileapp.data.CourseEntity
@@ -552,11 +560,19 @@ private fun CoursesContent(padding: PaddingValues) {
     val dao = remember { AppDatabase.getInstance(context).courseDao() }
     var courses by remember { mutableStateOf<List<CourseEntity>>(emptyList()) }
     var loading by remember { mutableStateOf(true) }
-    val expanded = remember { mutableStateMapOf<String, Boolean>() }
+    var selectedCourse by remember { mutableStateOf<CourseEntity?>(null) }
+    var selectedTrack by remember { mutableStateOf("All") }
+    var searchQuery by remember { mutableStateOf("") }
 
     LaunchedEffect(Unit) {
         courses = dao.getAll()
         loading = false
+    }
+
+    val filteredCourses = remember(courses, selectedTrack, searchQuery) {
+        courses
+            .filter { if (selectedTrack == "All") true else courseFilterCategory(it) == selectedTrack }
+            .filter { if (searchQuery.isBlank()) true else it.name.contains(searchQuery, ignoreCase = true) || it.code.contains(searchQuery, ignoreCase = true) }
     }
 
     if (loading) {
@@ -564,38 +580,215 @@ private fun CoursesContent(padding: PaddingValues) {
             CircularProgressIndicator()
         }
     } else {
-        LazyColumn(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 88.dp)
+                .padding(padding)
         ) {
-            item {
-                Text("IT Courses", style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
-                Text("Tap on a course to view more details.", style = MaterialTheme.typography.bodySmall)
-                Spacer(modifier = Modifier.height(8.dp))
+            Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
+                Text(
+                    text = "IT Course Selection",
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.ExtraBold,
+                    color = Color(0xFF131313)
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+                OutlinedTextField(
+                    value = searchQuery,
+                    onValueChange = { searchQuery = it },
+                    placeholder = { Text("Search courses...") },
+                    leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null) },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(28.dp),
+                    singleLine = true
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+                LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    items(listOf("All", "Core", "Advanced")) { track ->
+                        CourseTrackChip(
+                            label = track,
+                            isSelected = selectedTrack == track,
+                            onClick = { selectedTrack = track }
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.height(12.dp))
             }
-            items(courses) { course ->
-                val isExpanded = expanded[course.code] == true
-                Card(
-                    modifier = Modifier.fillMaxWidth().clickable { expanded[course.code] = !isExpanded },
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
-                    elevation = CardDefaults.cardElevation(2.dp)
-                ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Text("${course.code} — ${course.name}", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                        Text("Credits: ${course.credits}", style = MaterialTheme.typography.bodySmall)
-                        if (isExpanded) {
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text("Pre-requisites: ${course.prerequisites}", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.SemiBold)
-                            Text(course.description, style = MaterialTheme.typography.bodyMedium)
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color(0xFFF5F5F5))
+                    .padding(horizontal = 16.dp, vertical = 10.dp)
+            ) {
+                Text("Code", modifier = Modifier.weight(0.18f), fontWeight = FontWeight.Bold, style = MaterialTheme.typography.labelLarge)
+                Text("Name", modifier = Modifier.weight(0.42f), fontWeight = FontWeight.Bold, style = MaterialTheme.typography.labelLarge)
+                Text("Credits", modifier = Modifier.weight(0.18f), fontWeight = FontWeight.Bold, style = MaterialTheme.typography.labelLarge, textAlign = TextAlign.Center)
+                Text("Lecturer", modifier = Modifier.weight(0.22f), fontWeight = FontWeight.Bold, style = MaterialTheme.typography.labelLarge)
+            }
+            Divider(color = Color(0xFFDDDDDD))
+            LazyColumn(modifier = Modifier.fillMaxWidth().weight(1f)) {
+                items(filteredCourses) { course ->
+                    Card(
+                        onClick = { selectedCourse = course },
+                        colors = CardDefaults.cardColors(containerColor = Color.Transparent),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+                        shape = RoundedCornerShape(0.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 14.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = course.code,
+                                modifier = Modifier.weight(0.18f),
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.SemiBold,
+                                color = Color(0xFF1A237E)
+                            )
+                            Text(
+                                text = course.name,
+                                modifier = Modifier.weight(0.42f),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = Color(0xFF202020)
+                            )
+                            Text(
+                                text = "${course.credits}",
+                                modifier = Modifier.weight(0.18f),
+                                style = MaterialTheme.typography.bodyMedium,
+                                textAlign = TextAlign.Center,
+                                color = Color(0xFF202020)
+                            )
+                            Text(
+                                text = "TBD",
+                                modifier = Modifier.weight(0.22f),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = Color(0xFF555555)
+                            )
                         }
                     }
+                    Divider(color = Color(0xFFEEEEEE))
                 }
             }
         }
+        selectedCourse?.let { course ->
+            CourseDetailsOverlay(course = course, onDismiss = { selectedCourse = null })
+        }
     }
+}
+
+@Composable
+private fun CourseTrackChip(label: String, isSelected: Boolean, onClick: () -> Unit) {
+    Card(
+        onClick = onClick,
+        colors = CardDefaults.cardColors(
+            containerColor = if (isSelected) Color(0xFF1A237E) else Color(0xFFEBEBEB)
+        ),
+        shape = RoundedCornerShape(22.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    ) {
+        Text(
+            text = label,
+            modifier = Modifier.padding(horizontal = 22.dp, vertical = 12.dp),
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold,
+            color = if (isSelected) Color.White else Color(0xFF333333)
+        )
+    }
+}
+
+@Composable
+private fun CourseDetailsOverlay(course: CourseEntity, onDismiss: () -> Unit) {
+    Dialog(onDismissRequest = onDismiss) {
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(containerColor = Color.White),
+            shape = RoundedCornerShape(30.dp)
+        ) {
+            Column(
+                modifier = Modifier
+                    .padding(24.dp)
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.Top
+                ) {
+                    Column(
+                        modifier = Modifier.weight(1f),
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Text(
+                            text = course.code,
+                            style = MaterialTheme.typography.labelLarge,
+                            color = Color(0xFF6A6A6A),
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            text = course.name,
+                            style = MaterialTheme.typography.headlineSmall,
+                            color = Color(0xFF121212),
+                            fontWeight = FontWeight.ExtraBold
+                        )
+                    }
+
+                    IconButton(onClick = onDismiss) {
+                        Icon(
+                            imageVector = Icons.Filled.Close,
+                            contentDescription = "Close course details",
+                            tint = Color(0xFF121212)
+                        )
+                    }
+                }
+
+                Divider(color = Color(0xFFE7E7E7))
+
+                Text(
+                    text = "${course.credits} credits",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.ExtraBold,
+                    color = Color(0xFF111111)
+                )
+
+                Text(
+                    text = if (course.prerequisites.isBlank()) "Pre-requisites: None" else "Pre-requisites: ${course.prerequisites}",
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.SemiBold,
+                    color = Color(0xFF3A3A3A)
+                )
+
+                Text(
+                    text = course.description,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = Color(0xFF3A3A3A)
+                )
+            }
+        }
+    }
+}
+
+private fun courseTrackLabel(course: CourseEntity): String {
+    val digits = course.code.filter(Char::isDigit)
+    return when (digits.firstOrNull()) {
+        '1' -> "Level 1"
+        '2' -> "Level 2"
+        '3' -> "Level 3"
+        '4' -> "Level 4"
+        else -> "Core"
+    }
+}
+
+private fun courseFilterCategory(course: CourseEntity): String {
+    val digit = course.code.filter(Char::isDigit).firstOrNull()
+    return if (digit == '3' || digit == '4') "Advanced" else "Core"
+}
+
+private fun String.coursePreview(limit: Int = 52): String {
+    val normalized = trim().replace("\n", " ")
+    return if (normalized.length <= limit) normalized else normalized.take(limit).trimEnd() + "..."
 }
 
 @Composable
