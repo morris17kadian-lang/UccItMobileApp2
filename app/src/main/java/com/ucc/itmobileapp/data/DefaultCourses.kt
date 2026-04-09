@@ -5,74 +5,95 @@ object DefaultCourses {
         return listOf(
             CourseEntity(
                 code = "ITT101",
-                name = "Introduction to Information Technology",
+                name = "Computer and Information Systems",
                 credits = 3,
                 prerequisites = "None",
-                description = "Overview of computing concepts, computer hardware/software, networks, and IT roles in organizations."
-            ),
-            CourseEntity(
-                code = "ITT102",
-                name = "Programming Fundamentals",
-                credits = 3,
-                prerequisites = "None",
-                description = "Problem-solving with algorithms; variables, control structures, functions, and basic data structures."
+                description = "This course provides an overview of information systems and " +
+                        "technology components while offering hands-on experience with " +
+                        "productivity tools to analyze and solve business problems."
             ),
             CourseEntity(
                 code = "ITT103",
-                name = "Database Fundamentals",
-                credits = 3,
-                prerequisites = "None",
-                description = "Relational database concepts, ER modeling, normalization, SQL queries, and basic database design."
-            ),
-            CourseEntity(
-                code = "ITT104",
-                name = "Computer Networks I",
+                name = "Programming Techniques",
                 credits = 3,
                 prerequisites = "ITT101",
-                description = "Networking basics including OSI/TCP-IP models, IP addressing, subnetting, switching, and routing concepts."
+                description = "This course provides an overview of information systems and " +
+                        "technology components while offering hands-on experience with " +
+                        "productivity tools to analyze and solve business problems."
             ),
             CourseEntity(
-                code = "ITT201",
-                name = "Object-Oriented Programming",
+                code = "ITT116",
+                name = "Computer Essentials and Troubleshooting I",
                 credits = 3,
-                prerequisites = "ITT102",
-                description = "Classes, objects, encapsulation, inheritance, polymorphism, interfaces, and basic design principles."
+                prerequisites = "ITT101",
+                description = "This course provides hands-on experience in diagnosing and " +
+                        "resolving common hardware and software issues encountered during " +
+                        "regular computer usage."
             ),
             CourseEntity(
-                code = "ITT202",
-                name = "Web Development",
+                code = "ITT200",
+                name = "Object Oriented Programming Using C++",
                 credits = 3,
-                prerequisites = "ITT102",
-                description = "Client-side web development fundamentals: HTML, CSS, basic JavaScript, and responsive design concepts."
+                prerequisites = "ITT103",
+                description = "This course expands on object-oriented programming concepts " +
+                        "and features, requiring students to apply them in designing " +
+                        "solutions for real-world problems."
             ),
             CourseEntity(
                 code = "ITT203",
-                name = "Systems Analysis and Design",
+                name = "Data Structures & File Management I",
                 credits = 3,
-                prerequisites = "ITT101",
-                description = "Requirements gathering, process modeling, use cases, SDLC, and designing information systems solutions."
+                prerequisites = "ITT200",
+                description = "This course provides the theoretical framework for data " +
+                        "structures and file management, introducing students to how data is " +
+                        "organized, manipulated, and stored for advanced practical study."
             ),
             CourseEntity(
-                code = "ITT204",
-                name = "Data Structures and Algorithms",
+                code = "ITT208",
+                name = "Internet Authoring I",
                 credits = 3,
-                prerequisites = "ITT201",
-                description = "Lists, stacks, queues, trees, hashing, sorting/searching, and algorithm efficiency analysis."
+                prerequisites = "ITT103",
+                description = "This introductory course teaches the design, development, and " +
+                        "publication of websites using professional internet authoring tools."
             ),
             CourseEntity(
-                code = "ITT301",
-                name = "Mobile Application Development",
+                code = "ITT211",
+                name = "Computer Data Analysis",
                 credits = 3,
-                prerequisites = "ITT201",
-                description = "Principles of mobile UI/UX, app architecture, data persistence, and deploying mobile applications."
+                prerequisites = "None",
+                description = "This course teaches the fundamental methods for collecting, " +
+                        "processing, and visualizing data using statistical and " +
+                        "computational tools to support informed business decision-making."
             ),
             CourseEntity(
                 code = "ITT302",
-                name = "Information Security Fundamentals",
+                name = "Operating Systems",
                 credits = 3,
-                prerequisites = "ITT101",
-                description = "Security concepts including CIA triad, threats, vulnerabilities, risk management, and basic controls."
+                prerequisites = "None",
+                description = "This course covers the fundamentals of operating system design " +
+                        "and implementation, focusing on core components such as process " +
+                        "scheduling, memory management, and file systems."
             ),
+            CourseEntity(
+                code = "ITT310",
+                name = "Systems Analysis and Design",
+                credits = 3,
+                prerequisites = "ITT210",
+                description = "This course explores the full Systems Development Life Cycle " +
+                        "(SDLC) through advanced theories and practical case study " +
+                        "simulations, preparing students to design, implement, and maintain " +
+                        "complex information systems."
+            ),
+            CourseEntity(
+                code = "ITT420",
+                name = "Mobile Application Development",
+                credits = 3,
+                prerequisites = "None",
+                description = "This course teaches the core skills for developing Android " +
+                        "applications, focusing on user interface design, memory management, " +
+                        "and network techniques for retrieving and storing data across " +
+                        "platforms."
+            )
         )
     }
 }

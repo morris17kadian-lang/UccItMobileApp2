@@ -6,7 +6,7 @@ plugins {
 
 android {
     namespace = "com.ucc.itmobileapp"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.ucc.itmobileapp"
@@ -54,6 +54,7 @@ android {
 }
 
 dependencies {
+    implementation("androidx.compose.ui:ui:1.10.6")
     val composeBom = platform("androidx.compose:compose-bom:2024.06.00")
     implementation(composeBom)
     androidTestImplementation(composeBom)
@@ -79,4 +80,7 @@ dependencies {
     androidTestImplementation("androidx.test.ext:junit:1.2.1")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
+
+    // For viewModel() support in Compose
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.2")
 }

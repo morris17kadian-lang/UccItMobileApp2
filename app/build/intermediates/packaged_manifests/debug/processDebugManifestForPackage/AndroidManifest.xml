@@ -23,6 +23,7 @@
         android:extractNativeLibs="false"
         android:label="UCC IT"
         android:supportsRtl="true"
+        android:testOnly="true"
         android:theme="@style/Theme.UccItMobileApp" >
         <activity
             android:name="com.ucc.itmobileapp.MainActivity"
@@ -50,7 +51,8 @@
             android:exported="true" />
         <activity
             android:name="androidx.activity.ComponentActivity"
-            android:exported="true" />
+            android:exported="true"
+            android:theme="@android:style/Theme.Material.Light.NoActionBar" />
 
         <provider
             android:name="androidx.startup.InitializationProvider"
@@ -66,6 +68,13 @@
                 android:name="androidx.profileinstaller.ProfileInstallerInitializer"
                 android:value="androidx.startup" />
         </provider>
+
+        <uses-library
+            android:name="androidx.window.extensions"
+            android:required="false" />
+        <uses-library
+            android:name="androidx.window.sidecar"
+            android:required="false" />
 
         <service
             android:name="androidx.room.MultiInstanceInvalidationService"
