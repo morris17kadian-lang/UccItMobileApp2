@@ -1,0 +1,21 @@
+# macOS
+.DS_Store
+
+# Gradle
+.gradle/
+build/
+app/build/
+
+# Local config (machine-specific)
+local.properties
+
+# Android Studio / IntelliJ
+*.iml
+.idea/
+
+# Kotlin class files
+*.class
+
+# APKs / AABs
+*.apk
+*.aab
