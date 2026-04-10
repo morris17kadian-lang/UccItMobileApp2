@@ -1,4 +1,4 @@
-name: Build iOS App for Appetize
+name: Build iOS for Appetize
 on: [push]
 
 jobs:
@@ -6,9 +6,7 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
-
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
+      - uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
           java-version: '17'
@@ -16,24 +14,49 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
 
-      # This creates the debug framework for the iOS Simulator
-      - name: Build iOS Simulator Framework
+      # 1. Build the actual Kotlin code
+      - name: Build Kotlin Framework
         run: ./gradlew :app:iosSimulatorArm64Binaries
 
+      # 2. Manually assemble the .app folder Appetize needs
+      - name: Create App Bundle
+        run: |
+          mkdir -p build/Appetize/ComposeApp.app
+          
+          # Copy the framework into the app folder
+          cp -r app/build/bin/iosSimulatorArm64/debugFramework/ComposeApp.framework build/Appetize/ComposeApp.app/
+          
+          # Create a basic Info.plist so iOS knows how to launch it
+          cat <<EOF > build/Appetize/ComposeApp.app/Info.plist
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+              <key>CFBundleExecutable</key>
+              <string>ComposeApp</string>
+              <key>CFBundleIdentifier</key>
+              <string>com.ucc.itmobileapp</string>
+              <key>CFBundleName</key>
+              <string>UCC IT App</string>
+              <key>CFBundlePackageType</key>
+              <string>APPL</string>
+              <key>CFBundleShortVersionString</key>
+              <string>1.0</string>
+              <key>LSRequiresIPhoneOS</key>
+              <true/>
+              <key>UILaunchStoryboardName</key>
+              <string>LaunchScreen</string>
+          </dict>
+          </plist>
+          EOF
+
+      # 3. Zip it correctly
       - name: Package for Appetize
         run: |
-          # Create a clean workspace for the zip
-          mkdir -p build/appetize
-          
-          # Copy the compiled framework into the workspace
-          # Note: KMP generates a .framework which acts like a .app for the simulator
-          cp -r app/build/bin/iosSimulatorArm64/debugFramework/ComposeApp.framework build/appetize/
-          
-          # Move into the folder so the zip doesn't have extra "wrapper" folders
-          cd build/appetize
+          cd build/Appetize
           zip -r ../../ios-simulator-app.zip .
 
-      - name: Upload to GitHub Actions
+      - name: Upload
         uses: actions/upload-artifact@v4
         with:
           name: ios-app-for-appetize
