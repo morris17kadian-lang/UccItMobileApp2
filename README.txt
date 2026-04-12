@@ -5,8 +5,8 @@ This project is now structured as a Kotlin Multiplatform app with:
 - Web support through Kotlin Wasm and Compose Multiplatform
 
 Group Members
-- Kadian Morris
-- Charma Whorms
+- Kadian Morris - 20232989
+- Charma Whorms - 20206196
 
 Open the project
 Open this folder in Android Studio using File -> Open -> UccItMobileApp.
